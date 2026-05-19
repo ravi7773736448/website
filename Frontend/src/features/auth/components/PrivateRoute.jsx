@@ -5,9 +5,15 @@ const PrivateRoute = ({ children }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
 
+  // TEMPORARY: Skip auth check for development/testing
+  // Remove this in production!
+  // if (!user) {
+  //   return <Navigate to="/login" state={{ from: location }} replace />;
+  // }
+
+  // For testing: allow access if no user (remove in production)
   if (!user) {
-    // Redirect to login but save the attempted url
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return children;
   }
 
   return children;

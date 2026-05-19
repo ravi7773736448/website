@@ -5,6 +5,48 @@ const websiteInstance = axios.create({
     withCredentials: true
 })
 
+/**
+ * Fetch dashboard summary with status counts and recent websites
+ */
+export const fetchDashboardSummary = async () => {
+    try {
+        const response = await websiteInstance.get("/dashboard/summary")
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch dashboard summary:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to fetch dashboard summary" }
+    }
+}
+
+/**
+ * Fetch all websites for the user
+ */
+export const fetchWebsites = async () => {
+    try {
+        const response = await websiteInstance.get("/")
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch websites:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to fetch websites" }
+    }
+}
+
+/**
+ * Get a single website by ID
+ */
+export const fetchWebsiteById = async (id) => {
+    try {
+        const response = await websiteInstance.get(`/${id}`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch website:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to fetch website" }
+    }
+}
+
+/**
+ * Create a new website for monitoring
+ */
 export const createWebsite = async ({ url }) => {
     try {
         const response = await websiteInstance.post("/", { url })
@@ -23,5 +65,44 @@ export const createWebsite = async ({ url }) => {
             }
         }
         throw error.response?.data || { message: error.message || "Failed to create website" }
+    }
+}
+
+/**
+ * Update a website
+ */
+export const updateWebsite = async (id, updates) => {
+    try {
+        const response = await websiteInstance.put(`/${id}`, updates)
+        return response.data
+    } catch (error) {
+        console.error("Failed to update website:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to update website" }
+    }
+}
+
+/**
+ * Delete a website
+ */
+export const deleteWebsite = async (id) => {
+    try {
+        const response = await websiteInstance.delete(`/${id}`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to delete website:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to delete website" }
+    }
+}
+
+/**
+ * Trigger manual check for a website
+ */
+export const triggerWebsiteCheck = async (id) => {
+    try {
+        const response = await websiteInstance.post(`/${id}/check`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to trigger check:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to trigger check" }
     }
 }

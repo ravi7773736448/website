@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import RegisterPage from '../pages/Register.jsx'
 import useAuth from '../hooks/useAuth.js'
@@ -7,7 +7,7 @@ import useAuth from '../hooks/useAuth.js'
 export default function RegisterContainer() {
   const navigate = useNavigate()
   const { handleRegister } = useAuth()
-  const { loading, error } = useSelector(state => state.auth)
+  const { loading } = useSelector(state => state.auth)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -77,6 +77,20 @@ export default function RegisterContainer() {
         email: formData.email,
         password: formData.password,
       })
+      
+      // Magic Onboarding Flow: Check if user entered a URL on the landing page
+      const pendingUrl = sessionStorage.getItem('pendingMonitoringUrl');
+      if (pendingUrl) {
+        try {
+          const { createWebsite } = await import('../../dashboard/services/website.api.js');
+          await createWebsite({ url: pendingUrl });
+          sessionStorage.removeItem('pendingMonitoringUrl');
+        } catch (websiteErr) {
+          console.error("Failed to automatically add website:", websiteErr);
+          // We still navigate to dashboard even if auto-add fails
+        }
+      }
+
       navigate('/dashboard')
     } catch (err) {
       setErrors({

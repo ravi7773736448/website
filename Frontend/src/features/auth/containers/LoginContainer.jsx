@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import LoginPage from '../pages/Login.jsx'
 import useAuth from '../hooks/useAuth.js'
@@ -7,7 +7,7 @@ import useAuth from '../hooks/useAuth.js'
 export default function LoginContainer() {
   const navigate = useNavigate()
   const { handleLogin } = useAuth()
-  const { loading, error } = useSelector(state => state.auth)
+  const { loading } = useSelector(state => state.auth)
 
   const [formData, setFormData] = useState({
     email: '',

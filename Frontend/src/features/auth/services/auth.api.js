@@ -66,23 +66,6 @@ export const logout = async () =>{
 }
 
 export const authMe = async () => {
-    try {
-        const response = await authInstance.get("/me")
-        return response.data
-    }
-    catch(error) {
-        if (!error.response) {
-            console.warn("PulseGuard API offline. Returning DEMO session profile.");
-            return {
-                success: true,
-                user: {
-                    id: "demo-uid-9921",
-                    username: "steve",
-                    email: "steve@example.com",
-                    role: "Administrator"
-                }
-            }
-        }
-        throw error.response?.data || { message: error.message || "Session verification failed" }
-    }
+    const response = await authInstance.get("/me")
+    return response.data
 }

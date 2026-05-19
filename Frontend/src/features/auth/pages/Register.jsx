@@ -1,18 +1,28 @@
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, User, Activity, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import useAuth from '../hooks/useAuth.js'
 
 function InputField({ label, name, type = "text", placeholder, value, onChange, error, icon: Icon, rightElement }) {
+  const [focused, setFocused] = useState(false);
+
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</label>
-      <div className="relative">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <label style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#888888' }}>
+        {label}
+      </label>
+      <div style={{ position: 'relative' }}>
         {Icon && (
           <Icon
-            size={18}
-            className={`absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200 ${error ? 'text-red-400' : 'text-slate-400'}`}
+            size={16}
+            style={{
+              position: 'absolute',
+              left: '14px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              transition: 'color 0.15s ease',
+              color: error ? '#ef4444' : (focused ? '#f5f5f5' : '#555555')
+            }}
           />
         )}
         <input
@@ -21,137 +31,154 @@ function InputField({ label, name, type = "text", placeholder, value, onChange, 
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`
-            w-full h-12 bg-white text-sm text-slate-900 placeholder-slate-400
-            border rounded-xl outline-none transition-all duration-200
-            ${Icon ? "pl-11" : "pl-4"}
-            ${rightElement ? "pr-11" : "pr-4"}
-            ${error
-              ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
-              : "border-slate-200 hover:border-slate-300 focus:border-[#2E31FF] focus:ring-4 focus:ring-[#2E31FF]/10"
-            }
-          `}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{
+            width: '100%',
+            height: '46px',
+            backgroundColor: '#161616',
+            color: '#f5f5f5',
+            fontSize: '14px',
+            fontFamily: 'inherit',
+            paddingLeft: Icon ? '42px' : '14px',
+            paddingRight: rightElement ? '42px' : '14px',
+            border: `1px solid ${error ? '#ef4444' : (focused ? '#333333' : '#1f1f1f')}`,
+            borderRadius: '9px',
+            outline: 'none',
+            transition: 'border-color 0.15s ease',
+          }}
         />
         {rightElement && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
             {rightElement}
           </div>
         )}
       </div>
-      {error && <p className="text-xs text-red-500 font-medium mt-0.5">{error}</p>}
+      {error && <p style={{ fontSize: '12px', color: '#ef4444', margin: '4px 0 0', fontWeight: '500' }}>{error}</p>}
     </div>
   );
 }
 
-export default function Register() {
+export default function Register({ formData, errors, loading, onFieldChange, onSubmit }) {
   const navigate = useNavigate()
-  const { handleRegister } = useAuth()
-  const { loading, error: reduxError } = useSelector(state => state.auth)
-
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    agree: false,
-  })
-  const [errors, setErrors] = useState({})
-
-  const handleFieldChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: '',
-      }))
-    }
-  }
-
-  const validateForm = () => {
-    const newErrors = {}
-    if (!formData.name) {
-      newErrors.name = 'Full name is required'
-    } else if (formData.name.length < 3) {
-      newErrors.name = 'Name must be at least 3 characters'
-    }
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
-    }
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-    if (!formData.agree) {
-      newErrors.agree = 'You must agree to the terms'
-    }
-    return newErrors
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-
-    const newErrors = validateForm()
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
-    try {
-      await handleRegister({
-        username: formData.name,
-        email: formData.email,
-        password: formData.password,
-      })
-      navigate('/dashboard')
-    } catch (err) {
-      setErrors({
-        submit: err?.message || 'Registration failed. Please try again.',
-      })
-    }
-  }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FF] flex flex-col justify-center items-center relative overflow-hidden font-sans p-6 py-12">
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 z-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(#2E31FF 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#0a0a0a',
+      color: '#f5f5f5',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+      padding: '40px 24px',
+      fontFamily: "'Inter', sans-serif"
+    }}>
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '400px',
+        backgroundImage: 'radial-gradient(circle at top, rgba(255,255,255,0.015) 0%, transparent 80%)',
+        pointerEvents: 'none',
+        zIndex: 0
+      }} />
 
-      {/* Logo Area (Top Left) */}
-      <div className="absolute top-6 left-6 md:top-8 md:left-8 z-10 flex items-center gap-2.5">
-        <div className="h-10 w-10 rounded-xl bg-[#2E31FF] flex items-center justify-center shadow-lg shadow-[#2E31FF]/20">
-          <Activity size={20} className="text-white" />
-        </div>
-        <span className="text-xl font-bold text-slate-900 tracking-tight">pingGuard</span>
+      <div 
+        style={{ 
+          position: 'absolute', 
+          top: '32px', 
+          left: '32px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          cursor: 'pointer',
+          zIndex: 10 
+        }} 
+        onClick={() => navigate('/')}
+      >
+        <span style={{ fontSize: '20px', fontWeight: '600', color: '#f5f5f5', letterSpacing: '-0.01em' }}>PingGuard</span>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-
-        {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 sm:p-10">
-
-          <div className="mb-8 text-center">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight mb-1">Create an account</h1>
-            <p className="text-sm text-slate-500">Start monitoring your websites for free</p>
+      <div style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 1 }}>
+        <div style={{
+          backgroundColor: '#111111',
+          border: '1px solid #1f1f1f',
+          borderRadius: '12px',
+          padding: '40px 32px 32px 32px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '28px'
+        }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: '600', color: '#f5f5f5', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>
+              Create an account
+            </h1>
+            <p style={{ fontSize: '14px', color: '#888888', margin: 0 }}>
+              Start monitoring your websites for free
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
+          <button
+            type="button"
+            onClick={() => console.log('Continue with Google clicked')}
+            style={{
+              height: '46px',
+              width: '100%',
+              backgroundColor: '#161616',
+              color: '#f5f5f5',
+              border: '1px solid #1f1f1f',
+              borderRadius: '9px',
+              fontSize: '14px',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = '#1a1a1a';
+              e.currentTarget.style.borderColor = '#333333';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = '#161616';
+              e.currentTarget.style.borderColor = '#1f1f1f';
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" style={{ flexShrink: 0 }}>
+              <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.24h2.9c1.7-1.57 2.69-3.88 2.69-6.57z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.23l-2.9-2.24c-.8.54-1.84.87-3.06.87-2.35 0-4.34-1.59-5.05-3.73H.95v2.3C2.43 15.89 5.5 18 9 18z"/>
+              <path fill="#FBBC05" d="M3.95 10.67c-.18-.54-.28-1.12-.28-1.67s.1-1.13.28-1.67V5.03H.95C.34 6.22 0 7.57 0 9s.34 2.78.95 3.97l3-2.3z"/>
+              <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.99 11.43 0 9 0 5.5 0 2.43 2.11.95 5.03l3 2.3c.71-2.14 2.7-3.75 5.05-3.75z"/>
+            </svg>
+            Continue with Google
+          </button>
 
-            {(errors.submit || reduxError) && (
-              <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0"></div>
-                <p className="text-sm text-red-700 font-medium">{errors.submit || reduxError}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#1f1f1f' }} />
+            <span style={{ fontSize: '11px', color: '#444444', textTransform: 'uppercase', letterSpacing: '0.05em' }}>or</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#1f1f1f' }} />
+          </div>
+
+          <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} noValidate>
+            {(errors.submit) && (
+              <div style={{
+                padding: '12px 16px',
+                backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                border: '1px solid rgba(239, 68, 68, 0.15)',
+                borderLeft: '3px solid #ef4444',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ef4444' }}></div>
+                <p style={{ fontSize: '13px', color: '#ef4444', margin: 0, fontWeight: '500' }}>{errors.submit}</p>
               </div>
             )}
 
@@ -160,7 +187,7 @@ export default function Register() {
               name="name"
               placeholder="Alex Johnson"
               value={formData.name}
-              onChange={handleFieldChange}
+              onChange={onFieldChange}
               error={errors.name}
               icon={User}
             />
@@ -171,7 +198,7 @@ export default function Register() {
               type="email"
               placeholder="alex@company.com"
               value={formData.email}
-              onChange={handleFieldChange}
+              onChange={onFieldChange}
               error={errors.email}
               icon={Mail}
             />
@@ -180,19 +207,31 @@ export default function Register() {
               label="Password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Min. 8 characters"
+              placeholder="Min. 6 characters"
               value={formData.password}
-              onChange={handleFieldChange}
+              onChange={onFieldChange}
               error={errors.password}
               icon={Lock}
               rightElement={
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#555555',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.15s ease'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#888888'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#555555'}
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               }
             />
@@ -203,89 +242,118 @@ export default function Register() {
               type={showPassword ? "text" : "password"}
               placeholder="Confirm your password"
               value={formData.confirmPassword}
-              onChange={handleFieldChange}
+              onChange={onFieldChange}
               error={errors.confirmPassword}
               icon={Lock}
               rightElement={
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#555555',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.15s ease'
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#888888'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#555555'}
                   tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               }
             />
 
-            {/* Terms & Conditions */}
-            <div className="flex flex-col gap-1.5 mt-1">
-              <label className="flex items-start gap-2.5 cursor-pointer group">
-                <div className="relative flex items-center justify-center mt-0.5 shrink-0">
-                  <input
-                    type="checkbox"
-                    name="agree"
-                    checked={formData.agree}
-                    onChange={handleFieldChange}
-                    className="peer appearance-none w-4 h-4 border border-slate-300 rounded focus:ring-2 focus:ring-[#2E31FF]/20 checked:bg-[#2E31FF] checked:border-[#2E31FF] transition-all cursor-pointer"
-                  />
-                  <svg className="absolute w-2.5 h-2.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors leading-relaxed">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  name="agree"
+                  checked={formData.agree}
+                  onChange={onFieldChange}
+                  style={{
+                    width: '14px',
+                    height: '14px',
+                    backgroundColor: '#161616',
+                    border: '1px solid #1f1f1f',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginTop: '3px',
+                    accentColor: '#f5f5f5'
+                  }}
+                />
+                <span style={{ fontSize: '13px', color: '#888888', lineHeight: '1.4' }}>
                   I agree to the{" "}
-                  <a href="#" className="font-semibold text-[#2E31FF] hover:underline">
+                  <a href="#" style={{ color: '#888888', fontWeight: '600', textDecoration: 'underline', transition: 'color 0.15s ease' }}
+                     onMouseEnter={e => e.currentTarget.style.color = '#f5f5f5'}
+                     onMouseLeave={e => e.currentTarget.style.color = '#888888'}>
                     Terms of Service
                   </a>{" "}
                   and{" "}
-                  <a href="#" className="font-semibold text-[#2E31FF] hover:underline">
+                  <a href="#" style={{ color: '#888888', fontWeight: '600', textDecoration: 'underline', transition: 'color 0.15s ease' }}
+                     onMouseEnter={e => e.currentTarget.style.color = '#f5f5f5'}
+                     onMouseLeave={e => e.currentTarget.style.color = '#888888'}>
                     Privacy Policy
                   </a>
                 </span>
               </label>
               {errors.agree && (
-                <p className="text-xs text-red-500 font-medium ml-6.5 mt-0.5">{errors.agree}</p>
+                <p style={{ fontSize: '12px', color: '#ef4444', margin: '4px 0 0 24px', fontWeight: '500' }}>{errors.agree}</p>
               )}
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`
-                mt-2 h-12 w-full rounded-xl text-sm font-bold tracking-wide flex items-center justify-center gap-2
-                transition-all duration-200 shadow-sm
-                ${loading
-                  ? "bg-indigo-400 text-white cursor-not-allowed"
-                  : "bg-[#2E31FF] hover:bg-indigo-600 active:bg-indigo-700 hover:shadow-md hover:shadow-[#2E31FF]/25 text-white"
-                }
-              `}
+              style={{
+                marginTop: '8px',
+                height: '46px',
+                width: '100%',
+                backgroundColor: loading ? '#555555' : '#f5f5f5',
+                color: '#0a0a0a',
+                border: 'none',
+                borderRadius: '9px',
+                fontSize: '14px',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.15s ease',
+              }}
+              onMouseEnter={e => { if(!loading) e.currentTarget.style.backgroundColor = '#e0e0e0' }}
+              onMouseLeave={e => { if(!loading) e.currentTarget.style.backgroundColor = '#f5f5f5' }}
             >
               {loading ? "Creating account..." : (
                 <>
                   Create account
-                  <ArrowRight size={18} />
+                  <ArrowRight size={14} />
                 </>
               )}
             </button>
-
           </form>
 
-          <div className="mt-8 flex items-center justify-center gap-2">
-            <span className="text-sm text-slate-500">Already have an account?</span>
-            <Link to="/login" className="text-sm font-bold text-[#2E31FF] hover:text-indigo-700 transition-colors">
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', fontSize: '13px', borderTop: '1px solid #1f1f1f', paddingTop: '20px' }}>
+            <span style={{ color: '#555555' }}>Already have an account?</span>
+            <Link to="/login" style={{ color: '#888888', textDecoration: 'none', fontWeight: '600', transition: 'color 0.15s ease' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#f5f5f5'}
+                  onMouseLeave={e => e.currentTarget.style.color = '#888888'}>
               Sign in
             </Link>
           </div>
-
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-xs font-medium text-slate-400">
-            &copy; {new Date().getFullYear()} pingGuard Inc. All rights reserved.
+        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <p style={{ fontSize: '11px', color: '#555555', margin: 0 }}>
+            &copy; {new Date().getFullYear()} PingGuard Inc. All rights reserved.
           </p>
         </div>
-
       </div>
     </div>
   );

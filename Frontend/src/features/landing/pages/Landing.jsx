@@ -1,6 +1,4 @@
-import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import React from 'react'
 import Navbar from '../components/Navbar.jsx'
 import Hero from '../components/Hero.jsx'
 import Stats from '../components/Stats.jsx'
@@ -11,16 +9,6 @@ import Footer from '../components/Footer.jsx'
 import Aurora from '../components/Aurora.jsx'
 
 const Landing = () => {
-  const navigate = useNavigate()
-  const { user } = useSelector(state => state.auth)
-
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [user, navigate])
-
-  if (user) return null
   return (
     <div style={{ backgroundColor: '#0a0a0a', minHeight: '100vh', position: 'relative' }}>
 

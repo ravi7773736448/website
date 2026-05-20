@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import useWindowWidth from './useWindowWidth.js'
 import { setUser } from '../../auth/state/auth.slice.js'
-import { authMe } from '../../auth/services/auth.api.js'
+import { logout } from '../../auth/services/auth.api.js'
 
 export default function Navbar() {
   const navigate = useNavigate()
@@ -35,8 +35,11 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await authMe()
+      await logout()
     } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      // Clear Redux state (HTTP-only cookie is cleared by backend)
       dispatch(setUser(null))
       navigate('/')
     }
@@ -70,6 +73,11 @@ export default function Navbar() {
         {/* Nav Links */}
         {!isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+            <a key="home" href="#" onClick={(e) => { e.preventDefault(); navigate('/') }}
+              style={{ fontSize: '14px', color: '#aaaaaa', textDecoration: 'none', transition: 'color 0.15s ease', cursor: 'pointer' }}
+              onMouseEnter={e => e.target.style.color = '#f5f5f5'}
+              onMouseLeave={e => e.target.style.color = '#aaaaaa'}
+            >Home</a>
             {['Features', 'Pricing', 'Docs'].map(link => (
               <a key={link} href={`#${link.toLowerCase()}`}
                 style={{ fontSize: '14px', color: '#aaaaaa', textDecoration: 'none', transition: 'color 0.15s ease', cursor: 'pointer' }}

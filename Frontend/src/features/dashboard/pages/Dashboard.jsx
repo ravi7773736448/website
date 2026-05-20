@@ -5,6 +5,7 @@ import StatCard from '../../../components/ui/StatCard'
 import WebsiteTable from '../components/WebsiteTable'
 import ActivityFeed from '../components/ActivityFeed'
 import { UptimeChart, ResponseTimeChart } from '../components/AnalyticsCharts'
+import LiveHeartbeat from '../components/LiveHeartbeat'
 import IncidentSummary from '../components/IncidentSummary'
 import AddWebsiteModal from '../components/AddWebsiteModal'
 import {
@@ -43,6 +44,16 @@ const Dashboard = () => {
     dispatch(loadWebsites())
   }, [dispatch])
 
+  // Auto-refresh websites every 30 seconds to show live status updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(loadDashboardSummary())
+      dispatch(loadWebsites())
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
+  }, [dispatch])
+
   // Clear error/success messages after 3 seconds
   useEffect(() => {
     if (error || successMessage) {
@@ -56,17 +67,29 @@ const Dashboard = () => {
 
   const handleAddWebsite = async (data) => {
     try {
-      const result = await dispatch(createWebsiteThunk(data)).unwrap()
-      if (result.success) {
-        setIsModalOpen(false)
-        // Reload dashboard after adding website
+      // Only send the URL to the API
+      const result = await dispatch(createWebsiteThunk({ url: data.url })).unwrap()
+      
+      // Close modal immediately
+      setIsModalOpen(false)
+      
+      // Trigger immediate check if website was created
+      if (result.website?.id) {
         setTimeout(() => {
-          dispatch(loadDashboardSummary())
-          dispatch(loadWebsites())
-        }, 500)
+          dispatch(triggerWebsiteCheckThunk(result.website.id))
+        }, 300)
       }
+      
+      // Reload dashboard after adding website
+      setTimeout(() => {
+        dispatch(loadDashboardSummary())
+        dispatch(loadWebsites())
+      }, 500)
+      
+      return result
     } catch (err) {
       console.error('Failed to add website:', err)
+      throw err
     }
   }
 
@@ -135,6 +158,8 @@ const Dashboard = () => {
         </div>
       )}
 
+      <LiveHeartbeat websites={websites} />
+
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
@@ -165,7 +190,7 @@ const Dashboard = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleAddWebsite}
-        isLoading={isLoading}
+        isLoading={isLoading || false}
       />
     </div>
   )

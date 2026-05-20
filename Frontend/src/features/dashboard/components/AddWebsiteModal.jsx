@@ -7,12 +7,24 @@ const AddWebsiteModal = ({ isOpen, onClose, onSubmit, isLoading = false }) => {
     interval: '60',
     emailAlerts: true,
   })
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onSubmit?.(formData)
-    setFormData({ url: '', interval: '60', emailAlerts: true })
-    onClose()
+    setError('')
+    
+    if (!formData.url.trim()) {
+      setError('Please enter a website URL')
+      return
+    }
+    
+    try {
+      await onSubmit?.(formData)
+      setFormData({ url: '', interval: '60', emailAlerts: true })
+      onClose()
+    } catch (err) {
+      setError(err?.message || 'Failed to add website')
+    }
   }
 
   if (!isOpen) return null
@@ -32,6 +44,12 @@ const AddWebsiteModal = ({ isOpen, onClose, onSubmit, isLoading = false }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-3 py-2 rounded-md text-xs">
+              {error}
+            </div>
+          )}
+          
           <div>
             <label className="block text-xs font-medium text-zinc-400 mb-1.5">Website URL</label>
             <div className="relative">
@@ -39,10 +57,13 @@ const AddWebsiteModal = ({ isOpen, onClose, onSubmit, isLoading = false }) => {
               <input
                 type="url"
                 value={formData.url}
-                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, url: e.target.value })
+                  setError('')
+                }}
                 placeholder="https://example.com"
-                required
-                className="w-full h-10 pl-10 pr-4 bg-zinc-950 border border-zinc-800 rounded-md text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-700"
+                disabled={isLoading}
+                className="w-full h-10 pl-10 pr-4 bg-zinc-950 border border-zinc-800 rounded-md text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -83,7 +104,7 @@ const AddWebsiteModal = ({ isOpen, onClose, onSubmit, isLoading = false }) => {
             </label>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}

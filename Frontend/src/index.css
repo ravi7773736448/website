@@ -1,10 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 * {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings - Montserrat */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
+}
+
+/* UI Elements - Montserrat */
+button, input[type="button"], input[type="submit"], a.btn, .btn {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Labels and Form Elements - Montserrat */
+label, input[type="text"], input[type="email"], input[type="password"], textarea, select {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Documents - Times New Roman */
+.document, .document-content, .doc-text, article {
+  font-family: 'Times New Roman', serif;
 }
 
 :root {

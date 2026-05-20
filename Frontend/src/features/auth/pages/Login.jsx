@@ -135,7 +135,7 @@ export default function Login({ formData, errors, loading, onFieldChange, onSubm
 
           <button
             type="button"
-            onClick={() => console.log('Continue with Google clicked')}
+            onClick={() => window.location.href="/api/auth/google"}
             style={{
               height: '46px',
               width: '100%',
@@ -259,7 +259,7 @@ export default function Login({ formData, errors, loading, onFieldChange, onSubm
 
               <button
                 type="button"
-                onClick={() => console.log('Forgot password clicked')}
+                onClick={() => navigate('/forgot-password')}
                 style={{
                   backgroundColor: 'transparent',
                   border: 'none',

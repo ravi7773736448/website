@@ -69,3 +69,21 @@ export const authMe = async () => {
     const response = await authInstance.get("/me")
     return response.data
 }
+
+export const forgotPassword = async (email) => {
+    try {
+        const response = await authInstance.post("/forgot-password", { email })
+        return response.data
+    } catch (error) {
+        throw error.response?.data || { message: error.message || "Failed to send reset link" }
+    }
+}
+
+export const resetPassword = async (token, email, newPassword) => {
+    try {
+        const response = await authInstance.post("/reset-password", { token, email, newPassword })
+        return response.data
+    } catch (error) {
+        throw error.response?.data || { message: error.message || "Failed to reset password" }
+    }
+}

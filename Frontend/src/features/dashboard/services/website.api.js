@@ -106,3 +106,42 @@ export const triggerWebsiteCheck = async (id) => {
         throw error.response?.data || { message: error.message || "Failed to trigger check" }
     }
 }
+
+/**
+ * Fetch all incidents for the user
+ */
+export const fetchAllIncidents = async (limit = 10) => {
+    try {
+        const response = await websiteInstance.get(`/incidents/all?limit=${limit}`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch incidents:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to fetch incidents" }
+    }
+}
+
+/**
+ * Fetch website analytics
+ */
+export const fetchWebsiteAnalytics = async (id, period = 24) => {
+    try {
+        const response = await websiteInstance.get(`/${id}/analytics?period=${period}`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch analytics:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to fetch analytics" }
+    }
+}
+
+/**
+ * Fetch incidents for a specific website
+ */
+export const fetchWebsiteIncidents = async (id, days = 30) => {
+    try {
+        const response = await websiteInstance.get(`/${id}/incidents?days=${days}`)
+        return response.data
+    } catch (error) {
+        console.error("Failed to fetch incidents:", error.message)
+        throw error.response?.data || { message: error.message || "Failed to fetch incidents" }
+    }
+}

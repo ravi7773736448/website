@@ -67,8 +67,8 @@ const Dashboard = () => {
 
   const handleAddWebsite = async (data) => {
     try {
-      // Only send the URL to the API
-      const result = await dispatch(createWebsiteThunk({ url: data.url })).unwrap()
+      // Send the full API configuration payload to the backend
+      const result = await dispatch(createWebsiteThunk(data)).unwrap()
       
       // Close modal immediately
       setIsModalOpen(false)
